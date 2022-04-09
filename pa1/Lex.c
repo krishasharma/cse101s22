@@ -69,4 +69,7 @@ int main (int argc, char **argv) {
     free(A);
     A = NULL;
     freeList(&nL);
+    fclose(in);
+    fclose(out);
+    return 0;
 }

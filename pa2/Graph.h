@@ -17,12 +17,14 @@
 #include <stdbool.h>
 #include "List.h"
 
-#define NIL = -3;
-#define INF = -100000;
+#define NIL -3
+#define INF -100000
 
-#define WHITE = -30 // as of yet undiscovered 
-#define BLACK = -420 // finished
-#define GRAY = -100 // vertecies discovered, but neighbors not 
+#define WHITE -30 // as of yet undiscovered 
+#define BLACK -420 // finished
+#define GRAY -100 // vertecies discovered, but neighbors not 
+
+typedef struct GraphObj* Graph;
 
 /*** Constructors-Destructors ***/
 Graph newGraph(int n);

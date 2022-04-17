@@ -16,8 +16,14 @@ LINK           = gcc -std=c17 -Wall -o
 REMOVE         = rm -f
 MEMCHECK       = valgrind --leak-check=full
 
+FindPath : FindPath.o $(HELIOS)
+	$(LINK) FindPath FindPath.o $(HELIOS)
+
 GraphClient : GraphClient.o $(HELIOS)
 	$(LINK) GraphClient GraphClient.o $(HELIOS)
+
+FindPath.o : FindPath.c $(ADONIS)
+	$(COMPILE) FindPath.c
 
 GraphClient.o : GraphClient.c $(ADONIS)
 	$(COMPILE) GraphClient.c
@@ -33,3 +39,4 @@ checkFind : FindPath
 
 checkClient : GraphClient
 	$(MEMCHECK) GraphClient
+

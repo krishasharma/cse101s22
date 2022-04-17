@@ -48,6 +48,8 @@ void clear(List L);
 
 void set(List L, int x);    // L is the list, x is the val that the current element will be set too 
 
+void moveTo(List L, int i); // helper function
+
 void moveFront(List L);
 
 void moveBack(List L);

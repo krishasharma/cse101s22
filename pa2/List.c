@@ -39,14 +39,13 @@ typedef struct ListObj{
 } ListObj;
 
 // Constructors-Destructors ---------------------------------------------------------------------------
-
 Node newNode(int data) {
     Node N = malloc(sizeof(NodeObj));
     if (N == NULL) {
         free(N);
         return NULL;
     }
-    N->data = data; 
+    N->data = data;
     N->next = NULL;
     N->prev = NULL;
     return N;
@@ -90,7 +89,7 @@ bool isEmpty(List L) { // checks if the list is empty
     if (length(L) > 0) {
         return false;
     }
-    return true; 
+    return true;
 }
 
 int length(List L) { // returns the number of elements in list L 
@@ -105,7 +104,7 @@ int index(List L) { // returns the index of the cursor element if defined, -1 ot
     if (L->cursor == NULL) {
         L->ind = -1;
     }
-    return (L->ind); 
+    return (L->ind);
 }
 
 int front(List L) { // returns the front element of L, pre: length() > 0 
@@ -117,7 +116,7 @@ int front(List L) { // returns the front element of L, pre: length() > 0
         printf("List Error: calling front() on an empty List\n");
         exit(EXIT_FAILURE);
     }
-    return (L->front->data); 
+    return (L->front->data);
 }
 
 
@@ -130,15 +129,15 @@ int back(List L) { // returns the back element of L, pre: length() > 0
         printf("List Error: calling back() on an empty List\n");
         exit(EXIT_FAILURE);
     }
-    return (L->back->data); 
+    return (L->back->data);
 }
 
 int get(List L) { // returns the cursor element of L, pre: length() > 0, index() >= 0
-    if (L == NULL) { 
+    if (L == NULL) {
         printf("List Error: calling get() on NULL List refrence\n");
         exit(EXIT_FAILURE);
     }
-    if (isEmpty(L)) { 
+    if (isEmpty(L)) {
         printf("List Error: calling get() on an empty List\n");
         exit(EXIT_FAILURE);
     }
@@ -189,6 +188,25 @@ void set(List L, int x) { // Overwrites the cursor element’s data with x.
     L->cursor->data = x;
 }
 
+
+void moveTo(List L, int i) {
+    if (L == NULL) {
+        printf("List Error: calling moveTo() with length or index preconditions not met\n");
+        exit(EXIT_FAILURE);
+    }
+    if (i >= 0 && i <= (length(L)-1)) {
+        Node current = L->front;
+        for(int x = 0; x < i; x++) {
+            current = current->next;
+        }
+        L->cursor = current;
+        L->ind = i;
+    } else {
+        L->cursor = NULL;
+        L->ind = -1;
+    }
+}
+
 void moveFront(List L) { // If L is non-empty, sets cursor under the front element,
     if (!isEmpty(L)) { // otherwise does nothing.
         L->cursor = L->front;
@@ -211,7 +229,7 @@ void moveBack(List L) { // If L is non-empty, sets cursor under the back element
 
 void movePrev(List L) {
     if (L->cursor == NULL) { // If cursor is defined and not at front, move cursor one
-        return; 
+        return;
     }
     if (L->cursor != NULL && L->cursor == L->front) { // step toward the front of L; if cursor is defined and at front,
         L->cursor = NULL; // cursor becomes undefined; if cursor is undefined
@@ -261,12 +279,13 @@ void append(List L, int x) { // Insert new element into L.
         L->front = L->back = N;
     }
     else {
-        L->back->next = N; 
-        N->prev = L->back; 
-        L->back = N; 
+        L->back->next = N;
+        N->prev = L->back;
+        L->back = N;
     }
-    L->length ++; 
+    L->length ++;
 }
+
 
 
 void insertBefore(List L, int x) { // Insert new element before cursor.
@@ -283,8 +302,8 @@ void insertBefore(List L, int x) { // Insert new element before cursor.
     N->prev = L->cursor->prev;
     L->cursor->prev = N;
     N->prev->next = N;
-    L->length ++; 
-    L->ind ++; 
+    L->length ++;
+    L->ind ++;
     return;
 }
 
@@ -332,7 +351,7 @@ void deleteFront(List L) { // Delete the front element.
         return;
     }
     else {
-        Node N = NULL; 
+        Node N = NULL;
         N =  L->front;
         if (L->cursor == L->front) {
             L->ind = -1;

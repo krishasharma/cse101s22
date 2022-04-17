@@ -12,6 +12,7 @@
         List.h
         Graph.C
         Graph.h
+        FindPath.c
         Makefile
         README.md
 

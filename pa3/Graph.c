@@ -22,7 +22,6 @@
 // private Graph type
 typedef struct GraphObj{
     List *neighborV;
-    int *distanceV;
     int *discover;
     int *finish;
     int *color; // array
@@ -37,20 +36,18 @@ typedef struct GraphObj{
 // Function newGraph() returns a Graph pointing to a newly created GraphObj 
 // representing a graph having n vertices and no edges.
 Graph newGraph(int n) {
-    Graph G = calloc(1, sizeof(GraphObj));
+    Graph G = calloc (1, sizeof(GraphObj));
     G->neighborV = (List *) calloc(n + 1, sizeof(List));
     G->vertex = n;
-    G->distanceV = calloc(n + 1, sizeof(int));
     G->discover = calloc(n + 1, sizeof(int));
     G->finish = calloc(n + 1, sizeof(int));
     G->color = calloc(n + 1, sizeof(int));
     G->parentV = calloc(n + 1, sizeof(int)); // parent vertex
     G->edges = 0;
     G->check = 0;
-    for (int i = 1; i < n + 1; i++) {
+    for (int i = 0; i < n + 1; i++) {
         G->neighborV[i] = newList();
         G->parentV[i] = NIL; // set the parent vertex to NIL 
-        G->distanceV[i] = UNDEF; // set the distance to INF
         G->color[i] = WHITE; // set vertex to "as of yet undiscovered"
 	G->discover[i] = 0;
     }
@@ -61,19 +58,17 @@ Graph newGraph(int n) {
 // then sets the handle *pG to NULL.
 void freeGraph(Graph* pG) {
     if ((*pG) != NULL && pG != NULL) {
-        for (int i = 1; i <= getOrder(*pG); i++) {
+        for (int i = 0; i <= getOrder(*pG); i++) {
             freeList(&((*pG)->neighborV[i]));
         }
     free((*pG)->neighborV);
     free((*pG)->color);
     free((*pG)->parentV);
-    free((*pG)->distanceV);
     free((*pG)->discover);
     free((*pG)->finish);
     (*pG)->neighborV = NULL;
     (*pG)->color = NULL;
     (*pG)->parentV = NULL;
-    (*pG)->distanceV = NULL;
     (*pG)->discover = NULL;
     (*pG)->finish = NULL;
     free(*pG);
@@ -116,7 +111,7 @@ int getParent(Graph G, int u) {
 // Function getDiscover() preconditions: 1 <= u <= n=getOrder(G)
 int getDiscover(Graph G, int u) { 
     if (u < 1 || u > getOrder(G)) { // if vertex is not in range
-	printf("Graph Error: calling getPath() on a vertex out of range\n");
+	printf("GRAPH ERROR: calling getPath() on a vertex out of range\n");
         exit(EXIT_FAILURE);
     }
     if (G->check == 0) {
@@ -128,7 +123,7 @@ int getDiscover(Graph G, int u) {
 // Function getFinish() preconditions: 1 <= u <= n = getOrder(G)
 int getFinish(Graph G, int u) { 
     if (u < 1 || u > getOrder(G)) { // if vertex is not in range
-        printf("Graph Error: calling getPath() on vertex out of range\n");
+        printf("GRAPH ERROR: calling getPath() on vertex out of range\n");
         exit(EXIT_FAILURE);
     }
     if (G->check == 0) {
@@ -218,7 +213,7 @@ int Visit(Graph G, int x, int time, List S) {
 void DFS(Graph G, List S) { 
     G->check = 1; 
     if (length(S) != getOrder(G)) { // if the length of S is not equal to the size of the graph
-        printf("Graph Error: calling DFS() while the preconditions are not met\n");
+        printf("GRAPH ERROR: calling DFS() while the preconditions are not met\n");
         exit(EXIT_FAILURE);
     }
     for (int x = 1; x <= getOrder(G); x++) {
@@ -238,37 +233,46 @@ void DFS(Graph G, List S) {
 // ** Helper operations ** ------------------------------------------------------------------------------------
 // Function transpose() preconditions: Graph exists 
 Graph transpose(Graph G) { 
-    /*int n = getOrder(G);
+    int n = getOrder(G);
     Graph transpose = newGraph(n);
-    int x = 1; // was 1
-    moveFront(G->neighborV[x]);
-    while (index(G->neighborV[x]) >= 0) { // while -1 will still run 
-        for (int x = 1; x < getOrder(G); x ++) {
-            int y = get(G->neighborV[x]); // get the adj vertex
-            addArc(transpose, y, x);
-            moveNext(G->neighborV[x]);
+    for (int i = 1; i <= getOrder(G); i++) {
+        moveFront(G->neighborV[i]);
+        while (index(G->neighborV[i]) >= 0) { // while -1 will still run 
+            int y = get(G->neighborV[i]); // get the adj vertex
+            addArc(transpose, y, i);
+            moveNext(G->neighborV[i]);
         }
-    }*/
-    return G;
+    }
+    return transpose;
 }
 
 // Function copyGraph() preconditions: Graph exists
 Graph copyGraph(Graph G) { 
-    /*int x = getOrder(G);
+    int x = getOrder(G);
     Graph newG = newGraph(x);
     for (int i = 1; i <= x; i++) {
-        newG->neighborV[i] = G->neighborV[i];
-    }*/
-    return G;
+        newG->neighborV[i] = copyList(G->neighborV[i]);
+	newG->parentV[i] = G->parentV[i];
+	newG->finish[i] = G->finish[i];
+	newG->discover[i] = G->discover[i];
+	newG->color[i] = G->color[i];
+    }
+    newG->edges = G->edges;
+    newG->time = G->time;
+    newG->vertex = G->vertex;
+    newG->check = G->check;
+    return newG;
 }
 
 // Finally, function printGraph() prints the adjacency list representation of G to the file pointed to by out. 
 // The format of this representation should match the above examples, 
 // so all that is required by the client is a single call to printGraph().
 void printGraph(FILE* out, Graph G) {
-    for (int x = 1; x < getOrder(G); x++) {
-        printList(out, G->neighborV[x]);
+    for (int i = 1; i <= getOrder(G); i++) {
+	fprintf(out, "%d: ", i);
+        printList(out, G->neighborV[i]);
     }
+    fprintf(out, "\n");
 }
 
 

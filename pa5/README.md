@@ -8,7 +8,7 @@
 
 ## Files
         The following files have been submitted:
-        List.c
+        List.cpp
         List.h
         ListTest.cpp
         Shuffle.cpp

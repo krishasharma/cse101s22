@@ -38,6 +38,8 @@ List::List(){
     Node *backDummy = new Node(NUM);
     beforeCursor = frontDummy;
     afterCursor = backDummy;
+    frontDummy->next = backDummy;
+    backDummy->prev = frontDummy;
     pos_cursor = 0;
     num_elements = 0;
 }
@@ -52,13 +54,11 @@ List::List(const List& L) {
     afterCursor = backDummy;
     num_elements = 0;
     pos_cursor = 0;
-    /*Node *X = L.frontDummy;
-    while (X != nullptr) {
-        this->insertAfter(X->data);
-        moveNext();
-    }*/
-    beforeCursor->next = afterCursor;
-    afterCursor->prev = beforeCursor;
+    Node *X = L.frontDummy;
+    while (X != L.backDummy) {
+        this->insertBefore(X->data);
+        X = X->next;
+    }
     frontDummy->prev = nullptr;
     backDummy->next = nullptr;
 }
@@ -151,14 +151,16 @@ void List::clear() {
 // Moves cursor to position 0 in this List.
 void List::moveFront() {
     pos_cursor = 0;
-    beforeCursor = frontDummy->next;
+    beforeCursor = frontDummy;
+    afterCursor = frontDummy->next;
 }
 
 // moveBack()
 // Moves cursor to position length() in this List.
 void List::moveBack() {
     pos_cursor = num_elements;
-    afterCursor = backDummy->prev;
+    afterCursor = backDummy;
+    beforeCursor = backDummy->prev;
 }
 
 // moveNext()
@@ -382,13 +384,16 @@ List List::concat(const List& L) const {
 // Returns a string representation of this List consisting of a comma 
 // separated sequence of elements, surrounded by parentheses.
 std::string List::to_string() const {
-    Node *N = nullptr;
+    std::cout << "hi" << std::endl;
     std::string s = "";
-    for (N = frontDummy->next; N != backDummy; N = N->next) {
-        //s += std::to_string(N->data)+" ";
-        //if (N->next != backDummy) {
-        //s += ", ";
+    for (Node* N = frontDummy->next; N != backDummy; N = N->next) {
+        //std::cout << "n->data: " << N->data << std::endl;
         std::cout << N->data << std::endl;
+        //s += std::to_string(N->data)+" ";
+        if (N != backDummy) {
+            s += std::to_string(N->data)+" "; // move s += std::to_string... in here
+        }
+        s += ", ";
     }
     s += ")"; // what does this line do; prof'd queue.cpp
     return s;

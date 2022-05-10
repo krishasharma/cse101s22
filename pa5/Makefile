@@ -1,53 +1,38 @@
 #------------------------------------------------------------------------------
 #  Makefile for CSE 101 Programming Assignment 5
 #
-#  make                     makes Sparse
-#  make Matrix Client       makes MatrixClient
-#  make clean               removes binaries
-#  make checkSparse         tests Sparse for memory leaks on in7
-#  make checkClient         tests MatrixClient for memory leaks
+#  make                makes Shuffle
+#  make ListClient     make ListClient
+#  make clean          removes binary files
+#  make check1         runs valgrind on ListClient
+#  make check2         runs valgrind on Shuffle with CLA 35
 #------------------------------------------------------------------------------
 
-BASE_SOURCES   = Matrix.c List.c
-BASE_OBJECTS   = Matrix.o List.o
-HEADERS        = Matrix.h List.h
-COMPILE        = gcc -std=c17 -Wall -c -g
-LINK           = gcc -std=c17 -Wall -o
-REMOVE         = rm -f
-MEMCHECK       = valgrind --leak-check=full
+CC = g++
+CFLAGS = -std=c++17 -Wall
+REMOVE = rm -f
 
-Sparse : Sparse.o $(BASE_OBJECTS)
-	$(LINK) Sparse Sparse.o $(BASE_OBJECTS)
+SRC = $(wildcard *.cpp)
+OBJ = $(SRC:.cpp=.o)
+EXECS = ListClient
 
-MatrixClient : MatrixClient.o $(BASE_OBJECTS)
-	$(LINK) MatrixClient MatrixClient.o $(BASE_OBJECTS)
+.PHONY: all clean debug GDB
 
-MatrixTest : MatrixTest.o $(BASE_OBJECTS)
-	$(LINK) MatrixTest MatrixTest.o $(BASE_OBJECTS)
-
-MatrixTest.o : MatrixTest.c $(HEADERS)
-	$(COMPILE) MatrixTest.c
-
-ListTest : ListTest.o List.o
-	$(LINK) ListTest ListTest.o List.o
-
-ListTest.o : ListTest.c List.h
-	$(COMPILE) ListTest.c
-
-Sparse.o : Sparse.c $(HEADERS)
-	$(COMPILE) Sparse.c
-
-MatrixClient.o : MatrixClient.c $(HEADERS)
-	$(COMPILE) MatrixClient.c
-
-$(BASE_OBJECTS) : $(BASE_SOURCES) $(HEADERS)
-	$(COMPILE) $(BASE_SOURCES)
+all: $(EXECS)
 
 clean:
-	$(REMOVE) Sparse MatrixClient MatrixTest ListTest Sparse.o MatrixClient.o MatrixTest.o ListTest.o $(BASE_OBJECTS)
+	$(REMOVE) $(OBJ) $(EXECS)
 
-checkSparse : Sparse
-	$(MEMCHECK) Sparse in7 junk7
+GDB: CFLAGS += -g
+GDB: clean all
+	gdb --args ./$(EXECS)
 
-checkClient : MatrixClient
-	$(MEMCHECK) MatrixClient
+
+$(EXECS): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(EXECS)
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $<
+
+cleanScript:
+	$(REMOVE) *.txt

@@ -50,6 +50,8 @@ List::List(const List& L) {
     // make this an empty list
     frontDummy = new Node(NUM);
     backDummy = new Node(NUM);
+    frontDummy->next = backDummy;
+    backDummy->prev = frontDummy;
     beforeCursor = frontDummy;
     afterCursor = backDummy;
     num_elements = 0;
@@ -76,9 +78,6 @@ List::~List() {
 // length()
 // Returns the length of this List.
 int List::length() const {
-    if (num_elements <= 0) {
-        throw std::length_error("List: Length(): length of list is less than or equal to 0");
-    }
     return num_elements;
 }
 
@@ -105,9 +104,6 @@ ListElement List::back() const {
 // position()
 // Returns the position of cursor in this List: 0 <= position() <= length().
 int List::position() const {
-    if (num_elements <= 0) {
-        throw std::range_error("List: Position(): range of list is out of range");
-    }
     return pos_cursor;
 }
 
@@ -115,7 +111,7 @@ int List::position() const {
 // Returns the element after the cursor.
 // pre: position()<length()
 ListElement List::peekNext() const {
-    if (pos_cursor > num_elements) {
+    if (pos_cursor >= num_elements) {
         throw std::range_error("List: peekNext(): trying to peekNext when cursor is out of list range");
     }
     return afterCursor->data;
@@ -125,7 +121,7 @@ ListElement List::peekNext() const {
 // Returns the element before the cursor.
 // pre: position()>0
 ListElement List::peekPrev() const {
-    if (pos_cursor > num_elements) {
+    if (pos_cursor < 0) {
         throw std::range_error("List: peekPrev(): trying to peekPrev when cursor is out of list range");
     }
     return beforeCursor->data;
@@ -164,7 +160,7 @@ void List::moveBack() {
 // was passed over. 
 // pre: position()<length() 
 ListElement List::moveNext() {
-    if (position() == length()) {
+    if (position() >= length()) {
         throw std::range_error("List: moveNext(): calling moveNext on a List out of range");
     }
     pos_cursor += 1;
@@ -178,7 +174,7 @@ ListElement List::moveNext() {
 // was passed over. 
 // pre: position()>0
 ListElement List::movePrev() {
-    if (position() == 0) {
+    if (position() <= 0) {
         throw std::range_error("List: movePrev(): calling movePrev on a List out of range");
     }
     pos_cursor -= 1;
@@ -257,7 +253,7 @@ void List::eraseAfter() {
 void List::eraseBefore() {
     //Node *N = new Node(x);
     Node *N = nullptr;
-    if (pos_cursor < 0) {
+    if (pos_cursor <= 0) {
         throw std::range_error("List: eraseBefore(): calling eraseBefore on a List out of range");
     }
     N = beforeCursor;
@@ -317,36 +313,74 @@ int List::findPrev(ListElement x) {
 void List::cleanup() {
     // make a node to keep track of the index frontDummy->next
     // use the cursor to itterate through the rest of the list to check for duplicates
-    moveFront();
-    for (int i = 0; i <= num_elements; i++) {
-        Node *X = afterCursor->prev;
-        for (int e = 0; e <= num_elements; e++) {
-            if (X->data == afterCursor->data) {
-                moveNext();
-                eraseBefore();
-            }
-        }
-        moveNext();
+    // keep track of cursor and before and after cursor's and then call moveFront()
+
+    if (length() <= 1) {
+        return;
     }
-    moveFront();
+
+    //int cursorCopy = pos_cursor; // pos_cursor COPY
+    //Node *bfC = beforeCursor; // before cursor copy
+    //Node *afC = afterCursor;
+    //Node *ind = nullptr;
+    //int x = 0;
+    //moveFront();
+    //moveNext();
+    //for (ind = frontDummy->next; ind != backDummy; ind = ind->next) {
+    //    while (findNext(ind->data) != -1 && position() != length()) {
+    //        if (beforeCursor == bfC) {
+    //            bfC = bfC->prev;
+    //        }
+    //        if (beforeCursor == afC) {
+    //            afC = afC->prev;
+    //        }
+    //        eraseBefore();
+    //        if (cursorCopy > pos_cursor) {
+    //            cursorCopy -= 1;
+    //        }
+    //    }
+
+    //    if (position() == length() && beforeCursor->data == ind->data) {
+    //        if (beforeCursor == bfC) {
+    //            bfC = bfC->prev;
+    //        }
+    //        if (beforeCursor == afC) {
+    //            afC = afC->prev;
+    //        }
+    //        eraseBefore();
+    //        if (cursorCopy > pos_cursor) {
+    //            cursorCopy -= 1;
+    //        }
+    //    }
+
+    //    moveFront();
+    //    x += 1; // moveFront counter
+    //    for (int y = 0; y <= x; y ++) {
+    //        if (ind != backDummy->prev) {
+    //            moveNext(); // x + 1 = how many times to call moveNext
+    //        }
+    //    }
+    //}
+    //pos_cursor = cursorCopy;
+    //beforeCursor = bfC; 
+    //afterCursor = afC;
 }
 
 // concat()
 // Returns a new List consisting of the elements of this List, followed by
 // the elements of L. The cursor in the returned List will be at postion 0.
 List List::concat(const List& L) const {
-    List *J = new List();
+    List J;
     Node *N = nullptr;
     Node *M = nullptr;
     for (N = this->frontDummy->next; N != this->backDummy; N = N->next) {
-        Node *X = this->afterCursor;
-        J->insertAfter(X->data);
+        J.insertBefore(N->data);
     }
-    for (M = L.frontDummy->next; N != L.backDummy; M = M->next) {
-        Node *Y = L.afterCursor;
-        J->insertAfter(Y->data);
+    for (M = L.frontDummy->next; M != L.backDummy; M = M->next) {
+        J.insertBefore(M->data);
     }
-    return *J;
+    J.moveFront();
+    return J;
 }
 
 // to_string()

@@ -8,31 +8,26 @@
 #  make check2         runs valgrind on Shuffle with CLA 35
 #------------------------------------------------------------------------------
 
-CC = g++
-CFLAGS = -std=c++17 -Wall
-REMOVE = rm -f
+Shuffle : Shuffle.o List.o
+	g++ -std=c++17 -Wall -o Shuffle Shuffle.o List.o 
 
-SRC = $(wildcard *.cpp)
-OBJ = $(SRC:.cpp=.o)
-EXECS = ListClient
+Shuffle.o : List.h Shuffle.cpp
+	g++ -std=c++17 -Wall -c Shuffle.cpp
 
-.PHONY: all clean debug GDB
+ListClient : ListClient.o List.o
+	g++ -std=c++17 -Wall -o ListClient ListClient.o List.o 
 
-all: $(EXECS)
+ListClient.o : List.h ListClient.cpp
+	g++ -std=c++17 -Wall -c ListClient.cpp
 
-clean:
-	$(REMOVE) $(OBJ) $(EXECS)
+List.o : List.h List.cpp
+	g++ -std=c++17 -Wall -c List.cpp
 
-GDB: CFLAGS += -g
-GDB: clean all
-	gdb --args ./$(EXECS)
+clean :
+	rm -f Shuffle Shuffle.o ListClient ListClient.o List.o
 
+check1 : ListClient
+	valgrind --leak-check=full ListClient
 
-$(EXECS): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(EXECS)
-
-%.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
-
-cleanScript:
-	$(REMOVE) *.txt
+check2 : Shuffle
+	valgrind --leak-check=full Shuffle 35

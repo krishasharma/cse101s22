@@ -164,7 +164,7 @@ void List::moveBack() {
 // was passed over. 
 // pre: position()<length() 
 ListElement List::moveNext() {
-    if (!(position()< length())) {
+    if (position() == length()) {
         throw std::range_error("List: moveNext(): calling moveNext on a List out of range");
     }
     pos_cursor += 1;
@@ -178,7 +178,7 @@ ListElement List::moveNext() {
 // was passed over. 
 // pre: position()>0
 ListElement List::movePrev() {
-    if (!(position() > 0)) {
+    if (position() == 0) {
         throw std::range_error("List: movePrev(): calling movePrev on a List out of range");
     }
     pos_cursor -= 1;
@@ -244,9 +244,9 @@ void List::eraseAfter() {
         throw std::range_error("List: eraseAfter(): calling eraseAfter on a List out of range");
     }
     N = afterCursor;
+    afterCursor = afterCursor->next;
     afterCursor->prev = beforeCursor;
     beforeCursor->next = afterCursor;
-    afterCursor = afterCursor->next;
     num_elements -= 1;
     delete N;
 }
@@ -261,9 +261,9 @@ void List::eraseBefore() {
         throw std::range_error("List: eraseBefore(): calling eraseBefore on a List out of range");
     }
     N = beforeCursor;
+    beforeCursor = beforeCursor->prev;
     beforeCursor->next = afterCursor;
     afterCursor->prev = beforeCursor;
-    beforeCursor = beforeCursor->prev;
     num_elements -= 1;
     pos_cursor -= 1;
     delete N;
@@ -279,7 +279,7 @@ void List::eraseBefore() {
 // returns the final cursor position. If x is not found, places the cursor 
 // at position length(), and returns -1. 
 int List::findNext(ListElement x) {
-    for (int i = 0; i <= num_elements; i++) {
+    while (afterCursor != backDummy) {
         if (afterCursor->data == x) {
             moveNext();
             return pos_cursor;
@@ -297,19 +297,15 @@ int List::findNext(ListElement x) {
 // returns the final cursor position. If x is not found, places the cursor 
 // at position 0, and returns -1. 
 int List::findPrev(ListElement x) {
-    Node *X = new Node(x);
-    for (X->data = 0; X->data <= num_elements; moveNext()) {
-        if (beforeCursor->data == X->data) {
+    while (beforeCursor != frontDummy) {
+        if (beforeCursor->data == x) {
             movePrev();
             return pos_cursor;
         }
-        moveNext();
+        movePrev();
     }
-    if (beforeCursor != X) {
-        moveFront();
-        return -1;
-    }
-    return pos_cursor;
+    moveFront();
+    return -1;
 }
 
 // cleanup()
@@ -319,6 +315,8 @@ int List::findPrev(ListElement x) {
 // is not moved with respect to the retained elements, i.e. it lies between 
 // the same two retained elements that it did before cleanup() was called.
 void List::cleanup() {
+    // make a node to keep track of the index frontDummy->next
+    // use the cursor to itterate through the rest of the list to check for duplicates
     moveFront();
     for (int i = 0; i <= num_elements; i++) {
         Node *X = afterCursor->prev;

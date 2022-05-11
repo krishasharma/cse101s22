@@ -16,11 +16,11 @@
         README.md
 
 ## Errors
-        This code currently has no known errors.
+        This code currently encounters errors during cleanup() List test's.
 
 ## Cleaning
         make clean
-        To clean the program manually, type "rm -f *.o Sparse Matrix List MatrixTest ListTest" into command line. 
+        To clean the program manually, type "rm -f Shuffle Shuffle.o ListClient ListClient.o List.o" into the command line 
 
 ## Notes
         Please note that there was high level pusedocode collabration with my sister Twisha Sharma (tvsharma) during this assignment. The assignment code is also based off of Professor Tantalo's example code and pusedo-code provided on the class webpage as well as during class lecture.

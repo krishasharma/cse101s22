@@ -18,8 +18,8 @@
 #include "List.h"
 #include "BigInteger.h"
 
-#define power 2
-#define base 10
+#define power 9
+#define base 1000000000
 
 // Class Constructors & Destructors ----------------------------------------
 
@@ -89,13 +89,7 @@ BigInteger::BigInteger(const BigInteger& N) {
 // Returns -1, 1 or 0 according to whether this BigInteger is positive, 
 // negative or 0, respectively.
 int BigInteger::sign() const {
-    if (signum == -1) { // if sign is negative
-        return -1;
-    }
-    if (signum == 1) { // if sign is positive 
-        return 1;
-    }
-    return 0;
+    return signum;
 }
 
 // compare()
@@ -168,17 +162,131 @@ void BigInteger::negate() {
         if (signum == -1) { // if sign is negative
             signum = 1; // change to positive
         }
-        return; // do nothing
+    }
+    return;
+}
+
+
+// sumList()
+// Overwrites the state of S with A + sgn*B (considered as vectors).
+// Used by both sum() and sub().
+void sumList(List& res, List A, List B, int sgn) {
+    A.moveBack();
+    B.moveBack();
+    ListElement x;
+    ListElement y;
+    ListElement z;
+    while (A.position() > 0 || B.position() > 0) { // parse through the longest list
+        if (sgn == 1) {
+            if (A.position() == 0) {
+                z = B.movePrev();
+            }
+            else if (B.position() == 0) {
+                z = A.movePrev();
+            }
+            else {
+                x = A.movePrev();
+                y = B.movePrev();
+                z = x + y;
+            }
+            res.insertAfter(z);
+        }
+        else if (sgn == -1) {
+            if (A.position() == 0) {
+                z = B.movePrev();
+                z = -z;
+            }
+            else if (B.position() == 0) {
+                z = A.movePrev();
+            }
+            else {
+                x = A.movePrev();
+                y = B.movePrev();
+                z = x - y;
+            }
+            res.insertAfter(z);
+        }
     }
 }
 
+// normalizeList()
+// Performs carries from right to left (least to most significant
+// digits), then returns the sign of the resulting integer. Used
+// by add(), sub() and mult().
+void normalizeList(List& L) {
+    int x = 0;
+    int y = 0;
+    bool carryOver = false;
+    List newList;
+    L.moveBack();
+    for (int i = L.length(); i != ((L.length() - 1) % power); i--) {
+        x = L.movePrev();
+        if (carryOver == true) {
+            y = x / base;
+            x += y;
+            carryOver = false;
+        }
+        if (x > base) {
+            x = x % base;
+            carryOver = true;
+        }
+        newList.insertAfter(x);
+    }
+    if (y > 0) {
+        newList.insertAfter(y);
+    }
+}
 
 // BigInteger Arithmetic operations ----------------------------------------
 
 // add()
 // Returns a BigInteger representing the sum of this and N.
 BigInteger BigInteger::add(const BigInteger& N) const {
-    return N;
+    BigInteger M;
+    BigInteger C = *this;
+    BigInteger NC = N;
+    bool check = false;
+    bool Ncheck = false;
+    C.digits = this->digits;
+    NC.digits = N.digits;
+    C.signum = this->signum;
+    NC.signum = N.signum;
+    if (NC.signum == C.signum) {
+        M.signum = C.signum;
+    }
+    else {
+        if (C.signum < NC.signum) { 
+            C.negate();
+            check = true;
+        }
+        else if (C.signum > NC.signum) {
+            NC.negate();
+            Ncheck = true;
+        }
+        if (C < NC) {
+            M.signum = NC.signum;
+        }
+        else if (C > NC) {
+            M.signum = C.signum;
+        }
+        else {
+            M.signum = 0;
+            return M;
+        }
+        if (check == true) {
+            C.negate();
+            check = false;
+        }
+        else if (Ncheck == true) {
+            NC.negate();
+            Ncheck = false;
+        }
+    }
+    List sum;
+    sumList(sum, C.digits, NC.digits, 1);
+    normalizeList(sum);
+    M.digits = sum;
+    return M;
 }
 
 // sub()
@@ -232,55 +340,6 @@ std::string BigInteger::to_string() {
     return s;
 }
 
-// sumList()
-// Overwrites the state of S with A + sgn*B (considered as vectors).
-// Used by both sum() and sub().
-void sumList(List& S, List A, List B, int sgn) {
-    // start from the back of the List's 
-    // iterate through both of them 
-        // add the elements to each other and then put that var into a new list
-    int x = 0;
-    int y = 0;
-    ListElement NEW;
-    A.moveBack();
-    B.moveBack();
-    for (x = 0; x < A.length(); x++) {
-        for (y = 0; y < B.length(); y++) {
-            ListElement AE = A.movePrev();
-            ListElement BE = B.movePrev();
-            if (sgn == 1) {
-                NEW = AE + BE;
-                S.insertBefore(NEW);
-            }
-            else if (sgn == -1) {
-                ListElement NEW = AE + BE;
-                S.insertBefore(NEW);
-            }
-        }
-    }
-    while (x < A.length()) {
-        ListElement AE = A.movePrev();
-        S.insertBefore(AE);
-        x++;
-    }
-    while (y < B.length()) {
-        ListElement BE = B.movePrev();
-        if (sgn == -1) {
-            BE = -BE;
-        }
-        S.insertBefore(NEW);
-    }
-}
-/*
-// normalizeList()
-// Performs carries from right to left (least to most significant
-// digits), then returns the sign of the resulting integer. Used
-// by add(), sub() and mult().
-int normalizeList(List& L) {
-    List newList;
-    newList.moveBack();
-    while (
-}*/
 
 // Overriden Operators -----------------------------------------------------
 

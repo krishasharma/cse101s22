@@ -1,46 +1,27 @@
-#------------------------------------------------------------------------------
-#  Makefile for CSE 101 Programming Assignment 7
-#
-#  make                     makes Order
-#  make DictionaryClient    makes DictionaryClient
-#  make clean               removes all binaries
-#  make OrderCheck          runs Order under valgrind on in5 junk5
-#  make DictionaryCheck     runs DictionaryClient under valgrind
-#------------------------------------------------------------------------------
+CC = g++
+CFLAGS = -std=c++17 -Wall
+REMOVE = rm -f
 
-MAIN           = Order
-ADT            = Dictionary
-SOURCE         = $(MAIN).cpp
-OBJECT         = $(MAIN).o
-ADT_TEST       = $(ADT)Client
-ADT_SOURCE     = $(ADT).cpp
-ADT_OBJECT     = $(ADT).o
-ADT_HEADER     = $(ADT).h
-COMPILE        = g++ -std=c++17 -Wall -c
-LINK           = g++ -std=c++17 -Wall -o
-REMOVE         = rm -f
-MEMCHECK       = valgrind --leak-check=full
+ALL_SOURCE = $(wildcard *.cpp)
+COMMON_SOURCE = ${shell grep -L "int main(" ${ALL_SOURCE}}
+COMMON_OBJECT = $(COMMON_SOURCE:%.cpp=%.o)
+EXECS = DictionaryClient DictionaryTest Order
 
-$(MAIN): $(OBJECT) $(ADT_OBJECT)
-	$(LINK) $(MAIN) $(OBJECT) $(ADT_OBJECT)
+.PHONY: all clean debug GDB
 
-$(ADT_TEST): $(ADT_TEST).o $(ADT_OBJECT)
-	$(LINK) $(ADT_TEST) $(ADT_TEST).o $(ADT_OBJECT)
-
-$(OBJECT): $(SOURCE) $(ADT_HEADER)
-	$(COMPILE) $(SOURCE)
-
-$(ADT_TEST).o: $(ADT_TEST).cpp $(ADT_HEADER)
-	$(COMPILE) $(ADT_TEST).cpp
-
-$(ADT_OBJECT): $(ADT_SOURCE) $(ADT_HEADER)
-	$(COMPILE) $(ADT_SOURCE)
+all: $(EXECS)
 
 clean:
-	$(REMOVE) $(MAIN) $(ADT_TEST) $(OBJECT) $(ADT_TEST).o $(ADT_OBJECT)
+	$(REMOVE) $(EXECS) *.o
 
-$(MAIN)Check: $(MAIN)
-	$(MEMCHECK) $(MAIN) in5 junk5
+GDB: CFLAGS += -g
+GDB: clean all
 
-$(ADT)Check: $(ADT_TEST)
-	$(MEMCHECK) $(ADT_TEST)
+$(EXECS): %: %.o $(COMMON_OBJECT)
+	$(CC) -o $@ $^
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -c $<
+
+cleanScript:
+	$(REMOVE) *.txt 

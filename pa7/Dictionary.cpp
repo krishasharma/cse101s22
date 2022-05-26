@@ -61,7 +61,8 @@ void Dictionary::inOrderString(std::string& s, Node* R) const {
         inOrderString(s, R->left);
         s += R->key;
         s += " : ";
-        s += R->val;
+        s += std::to_string(R->val);
+        s += "\n";
         inOrderString(s, R->right);
     }
 }
@@ -276,7 +277,7 @@ void Dictionary::setValue(keyType k, valType v) {
     while (x != nil) {
         y = x;
         if (Z->key == x->key) {
-            Z->val = v;
+            x->val = v;
             return;
         } else if (Z->key < x->key) {
             x = x->left;
@@ -413,7 +414,7 @@ bool Dictionary::equals(const Dictionary& D) const {
     B.begin();
     while (B.current != B.nil) {
         temp = A.search(A.root, B.current->key);
-        if (temp->key == B.current->key) {
+        if (temp->key != B.current->key) {
             return false;
         }
         if (B.current->val != temp->val) {

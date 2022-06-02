@@ -105,7 +105,7 @@ void Dictionary::postOrderDelete(Node* R) {
     if (R != nil) {
         postOrderDelete(R->left);
         postOrderDelete(R->right);
-        R = nil;
+        delete(R);
         num_pairs--;
     }
 }

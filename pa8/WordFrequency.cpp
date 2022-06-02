@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     int val = 0;
     string line = "";
     string token = "";
-    string delim = " \t\"',<.>/?;:[{]}|`~!@#$%^&*()-_=+0123456789";
+    string delim = " \t\\\"\',<.>/?;:[{]}|`~!@#$%^&*()-_=+0123456789";
     if (argc != 3) {
         cerr << "ERROR: incorrect usage" << endl;
         return EXIT_FAILURE;
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
             token = line.substr(begin, end-begin);
         }
     }
-    outfile << D << endl << endl;
+    outfile << D << endl;
     infile.close();
     outfile.close();
     return EXIT_SUCCESS;

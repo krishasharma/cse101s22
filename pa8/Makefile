@@ -1,27 +1,55 @@
-CC = g++
-CFLAGS = -std=c++17 -Wall
-REMOVE = rm -f
+#------------------------------------------------------------------------------
+#  Makefile for CSE 101 Programming Assignment 8
+#
+#  make                     makes WordFrequency
+#  make DictionaryClient    makes DictionaryClient
+#  make clean               removes all binaries
+#  make WordFrequencyCheck  runs WordFrequency under valgrind on Gutenberg.txt
+#  make DictionaryCheck     runs DictionaryClient under valgrind
+#------------------------------------------------------------------------------
 
-ALL_SOURCE = $(wildcard *.cpp)
-COMMON_SOURCE = ${shell grep -L "int main(" ${ALL_SOURCE}}
-COMMON_OBJECT = $(COMMON_SOURCE:%.cpp=%.o)
-EXECS = DictionaryClient
+MAIN           = WordFrequency
+MAIN2          = Order
+ADT            = Dictionary
+SOURCE         = $(MAIN).cpp
+SOURCE2        = $(MAIN2).cpp
+OBJECT         = $(MAIN).o
+OBJECT2        = $(MAIN2).o
+ADT_TEST       = $(ADT)Client
+ADT_SOURCE     = $(ADT).cpp
+ADT_OBJECT     = $(ADT).o
+ADT_HEADER     = $(ADT).h
+COMPILE        = g++ -std=c++17 -Wall -c
+LINK           = g++ -std=c++17 -Wall -o
+REMOVE         = rm -f
+MEMCHECK       = valgrind --leak-check=full
 
-.PHONY: all clean debug GDB
+$(MAIN): $(OBJECT) $(ADT_OBJECT)
+	$(LINK) $(MAIN) $(OBJECT) $(ADT_OBJECT)
 
-all: $(EXECS)
+$(MAIN2): $(OBJECT2) $(ADT_OBJECT)
+	$(LINK) $(MAIN2) $(OBJECT2) $(ADT_OBJECT)
+
+$(ADT_TEST): $(ADT_TEST).o $(ADT_OBJECT)
+	$(LINK) $(ADT_TEST) $(ADT_TEST).o $(ADT_OBJECT)
+
+$(OBJECT): $(SOURCE) $(ADT_HEADER)
+	$(COMPILE) $(SOURCE)
+
+$(OBJECT2): $(SOURCE2) $(ADT_HEADER)
+	$(COMPILE) $(SOURCE2)
+
+$(ADT_TEST).o: $(ADT_TEST).cpp $(ADT_HEADER)
+	$(COMPILE) $(ADT_TEST).cpp
+
+$(ADT_OBJECT): $(ADT_SOURCE) $(ADT_HEADER)
+	$(COMPILE) $(ADT_SOURCE)
 
 clean:
-	$(REMOVE) $(EXECS) *.o
+	$(REMOVE) $(MAIN) $(ADT_TEST) $(OBJECT) $(ADT_TEST).o $(ADT_OBJECT) $(MAIN2) $(OBJECT2)
 
-GDB: CFLAGS += -g
-GDB: clean all
+$(MAIN)Check: $(MAIN)
+	$(MEMCHECK) $(MAIN) GutenBerg.txt
 
-$(EXECS): %: %.o $(COMMON_OBJECT)
-	$(CC) -o $@ $^
-
-%.o: %.cpp
-	$(CC) $(CFLAGS) -c $<
-
-cleanScript:
-	$(REMOVE) *.txt·
+$(ADT)Check: $(ADT_TEST)
+	$(MEMCHECK) $(ADT_TEST)

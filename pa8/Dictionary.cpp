@@ -28,11 +28,13 @@ Dictionary::Node::Node(keyType k, valType v){
     parent = nullptr;
     left = nullptr;
     right = nullptr;
+    color = RED;
 }
 
 // Creates new Dictionary in the empty state. 
 Dictionary::Dictionary() {
     nil = new Node("krishakaiasharma", -420);
+    nil->color = BLACK;
     root = nil;
     current = nil;
     num_pairs = 0;
@@ -41,13 +43,16 @@ Dictionary::Dictionary() {
 // Copy constructor.
 Dictionary::Dictionary(const Dictionary& D) {
     nil = new Node("krishakaiasharma", -420);
+    nil->color = BLACK;
     root = nil;
+    current = nil;
     num_pairs = 0;
     preOrderCopy(D.root, D.nil);
 }
 
 // Destructor
 Dictionary::~Dictionary() {
+    //std::cout << "hi :)" << std::endl;
     clear();
     delete(nil);
 }
@@ -88,7 +93,7 @@ void Dictionary::preOrderString(std::string& s, Node* R) const {
 // Dictionary. Recursion terminates at N.
 void Dictionary::preOrderCopy(Node* R, Node* N) {
     if (R != N)  {
-        this->setValue(R->key, R->val);
+        setValue(R->key, R->val);
         preOrderCopy(R->left, N);
         preOrderCopy(R->right, N);
     }
@@ -122,28 +127,28 @@ Dictionary::Node* Dictionary::search(Node* R, keyType k) const {
 // If the subtree rooted at R is not empty, returns a pointer to the 
 // leftmost Node in that subtree, otherwise returns nil.
 Dictionary::Node* Dictionary::findMin(Node* R) {
-    if (R != nil) {
-        while (R->left != nil) {
-            R = R->left;
+    Node* temp;
+    temp = R;
+    if (temp != nil) {
+        while (temp->left != nil) {
+            temp = temp->left;
         }
-        return R;
-    } else {
-        return nil;
     }
+    return temp;
 }
 
 // findMax()
 // If the subtree rooted at R is not empty, returns a pointer to the 
 // rightmost Node in that subtree, otherwise returns nil.
 Dictionary::Node* Dictionary::findMax(Node* R) {
-    if (R != nil) {
-        while (R->right != nil) {
-            R = R->right;
+    Node* temp;
+    temp = R;
+    if (temp != nil) {
+        while (temp->right != nil) {
+            temp = temp->right;
         }
-        return R;
-    } else {
-        return nil;
     }
+    return temp;
 }
 
 // findNext()
@@ -174,7 +179,7 @@ Dictionary::Node* Dictionary::findPrev(Node* N) {
         return nil;
     }
     if (N->left != nil) {
-        return findMin(N->left);
+        return findMax(N->left);
     }
     Node* M = N->parent;
     while (M != nil && N == M->left) {
@@ -267,10 +272,10 @@ void Dictionary::RB_InsertFixUp(Node* N) {
                 if (N == N->parent->right) {
                     N = N->parent;                       // case 2
                     LeftRotate(N);                       // case 2
+                }
                 N->parent->color = BLACK;                // case 3
                 N->parent->parent->color = RED;          // case 3
                 RightRotate(N->parent->parent);          // case 3
-                }
             }
         } else {
             Y = N->parent->parent->left;
@@ -302,9 +307,7 @@ void Dictionary::RB_Transplant(Node* u, Node* v) { // same as transplant() forp 
     } else {
         u->parent->right = v;
     }
-    if (v != nil) {
-        v->parent = u->parent;
-    }
+    v->parent = u->parent;
 }
 
 // RB_DeleteFixUp()
@@ -340,7 +343,7 @@ void Dictionary::RB_DeleteFixUp(Node* N) {
             if (W->color == RED) {
                 W->color = BLACK;                             // case 5
                 N->parent->color = RED;                       // case 5
-                RightRotate(N->parent);                  // case 5
+                RightRotate(N->parent);                       // case 5
                 W = N->parent->left;                          // case 5
             }
             if (W->right->color == BLACK && W->left->color == BLACK) {
@@ -350,13 +353,13 @@ void Dictionary::RB_DeleteFixUp(Node* N) {
                 if (W->left->color == BLACK) {
                     W->right->color = BLACK;                  // case 7
                     W->color = RED;                           // case 7
-                    LeftRotate(W);                      // case 7
+                    LeftRotate(W);                            // case 7
                     W = N->parent->left;                      // case 7
                 }
                 W->color = N->parent->color;                  // case 8
                 N->parent->color = BLACK;                     // case 8
                 W->left->color = BLACK;                       // case 8
-                RightRotate(N->parent);                  // case 8
+                RightRotate(N->parent);                       // case 8
                 N = root;                                     // case 8
             }
         }
@@ -364,38 +367,86 @@ void Dictionary::RB_DeleteFixUp(Node* N) {
     N->color = BLACK;
 }
 
-/*
+
 // RB_Delete()
 void Dictionary::RB_Delete(Node* N) {
     Node* y;
     Node* x;
     y = N;
-    y_original_color = y->color;
+    int y_original_color = y->color;
     if (N->left == nil) {
         x = N->right;
-        this->RB_Transplant(N, N->right);
+        RB_Transplant(N, N->right);
     }
     else if (N->right == nil) {
-        x = N->left
-        this->RB_Transplant(N, N->left);
+        x = N->left;
+        RB_Transplant(N, N->left);
     } else {
-        y = TreeMinimum(N->right);
+        y = findMin(N->right);
         y_original_color = y->color;
         x = y->right;
         if (y->parent == N) {
             x->parent = y;
         } else {
-            this->RB_Transplant(y, y->right);
+            RB_Transplant(y, y->right);
             y->right = N->right;
             y->right->parent = y;
         }
-        this->RB_Transplant(N, y);
+        RB_Transplant(N, y);
         y->left = N->left;
         y->left->parent = y;
         y->color = N->color;
-    if (y_original_color == BLACK) {
-        this->RB_DeleteFixUp(x);
     }
+    if (y_original_color == BLACK) {
+        RB_DeleteFixUp(x);
+    }
+}
+
+/*
+// remove()
+// Deletes the pair for which key==k. If that pair is current, then current
+// becomes undefined.
+// Pre: contains(k).
+void Dictionary::remove(keyType k) {
+    Node* y;
+    Node* x;
+    Node* N = search(root, k);
+    y = N;
+    int y_original_color = y->color;
+    if (contains(k) != true) {
+        throw std::logic_error("remove(): logic error");
+    }
+    if (N->left == nil) {
+        x = N->right;
+        RB_Transplant(N, N->right);
+    }
+    else if (N->right == nil) {
+        x = N->left;
+        RB_Transplant(N, N->left);
+    } else {
+        y = findMin(N->right);
+        y_original_color = y->color;
+        x = y->right;
+        if (y->parent == N) {
+            x->parent = y;
+        } else {
+            RB_Transplant(y, y->right);
+            y->right = N->right;
+            y->right->parent = y;
+        }
+        RB_Transplant(N, y);
+        y->left = N->left;
+        y->left->parent = y;
+        y->color = N->color;
+    }
+    if (y_original_color == BLACK) {
+        RB_DeleteFixUp(x);
+    }
+    if (N == current) {
+        current = nil;
+    }
+    num_pairs --;
+    delete(N);
 }
 */
 
@@ -474,22 +525,22 @@ void Dictionary::clear() {
 // If a pair with key==k exists, overwrites the corresponding value with v, 
 // otherwise inserts the new pair (k, v).
 void Dictionary::setValue(keyType k, valType v) {
-    Node* Z = new Node(k, v);
-    Z->left = nil;
-    Z->right = nil;
     Node* y = nil;
     Node* x = root;
     while (x != nil) {
         y = x;
-        if (Z->key == x->key) {
+        if (k == x->key) {
             x->val = v;
             return;
-        } else if (Z->key < x->key) {
+        } else if (k < x->key) {
             x = x->left;
         } else {
             x = x->right;
         }
+        //std::cout << "x val  = " << x << std::endl;
     }
+    //std::cout << "hi :)" << std::endl;
+    Node* Z = new Node(k, v);
     Z->parent = y;
     if (y == nil) {
         root = Z;
@@ -498,7 +549,10 @@ void Dictionary::setValue(keyType k, valType v) {
     } else {
         y->right = Z;
     }
+    Z->left = nil;
+    Z->right = nil;
     num_pairs += 1;
+    Z->color = RED;
     RB_InsertFixUp(Z);
 }
 
@@ -507,41 +561,15 @@ void Dictionary::setValue(keyType k, valType v) {
 // becomes undefined.
 // Pre: contains(k).
 void Dictionary::remove(keyType k) {
-    Node* y;
-    Node* x;
+    if (contains(k) == false) {
+        throw std::logic_error("remove(): logic error");
+    }
     Node* N = search(root, k);
-    y = N;
-    int y_original_color = y->color;
-    if (N->left == nil) {
-        x = N->right;
-        RB_Transplant(N, N->right);
-    }
-    else if (N->right == nil) {
-        x = N->left;
-        RB_Transplant(N, N->left);
-    } else {
-        y = findMin(N->right);
-        y_original_color = y->color;
-        x = y->right;
-        if (y->parent == N) {
-            x->parent = y;
-        } else {
-            RB_Transplant(y, y->right);
-            y->right = N->right;
-            y->right->parent = y;
-        }
-        RB_Transplant(N, y);
-        y->left = N->left;
-        y->left->parent = y;
-        y->color = N->color;
-    }
-    if (y_original_color == BLACK) {
-        RB_DeleteFixUp(x);
-    }
+    RB_Delete(N);
+    num_pairs --;
     if (N == current) {
         current = nil;
     }
-    num_pairs --;
     delete(N);
 }
 

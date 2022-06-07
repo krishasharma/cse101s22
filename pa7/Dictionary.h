@@ -95,6 +95,8 @@ private:
    // Node, or is nil, returns nil.
    Node* findPrev(Node* N);
 
+   void transplant(Node* u, Node* v);
+
 public:
 
    // Class Constructors & Destructors ----------------------------------------
